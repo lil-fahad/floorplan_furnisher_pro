@@ -1,10 +1,12 @@
 import argparse
 import json
+import subprocess
 from pathlib import Path
 import yaml
 from ultralytics import YOLO
 
 from furniture_ai.config import settings
+from furniture_ai.utils.kaggle_io import ensure_kaggle_creds
 from furniture_ai.utils.logging import get_logger
 
 log = get_logger("train_detector")
@@ -28,6 +30,21 @@ def build_dataset_yaml(args, out_dir: Path) -> Path:
     return yaml_path
 
 
+def download_kaggle_dataset(slug: str, dest: Path) -> None:
+    dest = Path(dest)
+    dest.mkdir(parents=True, exist_ok=True)
+    subprocess.check_call([
+        "kaggle",
+        "datasets",
+        "download",
+        "-d",
+        slug,
+        "-p",
+        str(dest),
+        "--unzip",
+    ])
+
+
 def parse_args() -> argparse.Namespace:
     cfg = settings.detector
     p = argparse.ArgumentParser()
@@ -42,11 +59,23 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--resume", action="store_true", help="Resume training from given weights")
     p.add_argument("--models-dir", default=cfg.models_dir)
     p.add_argument("--model", default=cfg.model)
+    p.add_argument("--dataset-slug", default=cfg.dataset_slug)
     return p.parse_args()
 
 
 def main():
     args = parse_args()
+    slug = args.dataset_slug or settings.detector.dataset_slug
+    if slug and not ensure_kaggle_creds():
+        raise SystemExit(
+            "Kaggle credentials not found. Place kaggle.json in ~/.kaggle/ or set KAGGLE_USERNAME and KAGGLE_KEY"
+        )
+    data_root = Path(args.data_root)
+    if slug:
+        data_root.mkdir(parents=True, exist_ok=True)
+        if not any(data_root.iterdir()):
+            log.info(f"Downloading dataset {slug} to {data_root}")
+            download_kaggle_dataset(slug, data_root)
     out_dir = Path(args.models_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     data_yaml = build_dataset_yaml(args, out_dir)

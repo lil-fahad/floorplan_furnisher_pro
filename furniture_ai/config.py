@@ -17,6 +17,7 @@ class DetectorConfig(BaseModel):
     data_root: str = "data/detector"
     train_ann: str = "annotations/train.json"
     val_ann: str = "annotations/val.json"
+    dataset_slug: str | None = None
     img_size: int = 640
     batch_size: int = 16
     epochs: int = 50
