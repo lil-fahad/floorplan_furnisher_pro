@@ -1,0 +1,17 @@
+
+{
+  "Bedroom": [
+    {"name":"Bed","w":180,"h":200},
+    {"name":"Wardrobe","w":60,"h":180},
+    {"name":"Nightstand","w":50,"h":50}
+  ],
+  "Living": [
+    {"name":"Sofa","w":200,"h":90},
+    {"name":"TV","w":120,"h":40},
+    {"name":"CoffeeTable","w":80,"h":50}
+  ],
+  "Kitchen": [
+    {"name":"Counter","w":240,"h":60},
+    {"name":"Table","w":140,"h":80}
+  ]
+}

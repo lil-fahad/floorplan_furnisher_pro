@@ -1,0 +1,13 @@
+
+segmenter:
+  num_classes: 5
+  img_size: 512
+  batch_size: 4
+  epochs: 30
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  data_root: "data/seg"
+  models_dir: "models/segmenter"
+app:
+  jwt_secret: "please-change-me"
+  allow_origins: ["*"]
