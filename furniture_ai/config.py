@@ -13,12 +13,24 @@ class SegmenterConfig(BaseModel):
     data_root: str = "data/seg"
     models_dir: str = "models/segmenter"
 
+class DetectorConfig(BaseModel):
+    data_root: str = "data/detector"
+    train_ann: str = "annotations/train.json"
+    val_ann: str = "annotations/val.json"
+    img_size: int = 640
+    batch_size: int = 16
+    epochs: int = 50
+    learning_rate: float = 1e-3
+    model: str = "yolov8n.pt"
+    models_dir: str = "models/detector"
+
 class AppConfig(BaseModel):
     jwt_secret: str = "please-change-me"
     allow_origins: List[str] = ["*"]
 
 class Settings(BaseSettings):
     segmenter: SegmenterConfig = SegmenterConfig()
+    detector: DetectorConfig = DetectorConfig()
     app: AppConfig = AppConfig()
     model_config = SettingsConfigDict(env_file=".env", env_nested_delimiter="__")
 
