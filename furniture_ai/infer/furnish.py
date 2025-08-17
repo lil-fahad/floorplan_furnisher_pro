@@ -4,15 +4,23 @@ from typing import Dict, Any
 import numpy as np
 from PIL import Image, ImageDraw
 from furniture_ai.parse.segmenter import Segmenter
+from furniture_ai.parse.detector import Detector
 from furniture_ai.parse.vectorizer import vectorize_floorplan
 from furniture_ai.layout.generator import furnish_floorplan
 from furniture_ai.config import settings
 
-def run_furnish(image: Image.Image, weights_path: str | None = None) -> Dict[str, Any]:
-    seg = Segmenter(weights_path=weights_path)
+def run_furnish(image: Image.Image, seg_weights: str | None = None, det_weights: str | None = None) -> Dict[str, Any]:
+    seg = Segmenter(weights_path=seg_weights)
     mask = seg.predict(image).numpy()
     vec = vectorize_floorplan(mask)
-    layout = furnish_floorplan(vec)
+    detections = []
+    if det_weights:
+        try:
+            det = Detector(weights_path=det_weights)
+            detections = det.predict(image)
+        except FileNotFoundError:
+            detections = []
+    layout = furnish_floorplan(vec, detections)
     overlay = render_overlay(image, layout)
     return {"layout": layout, "overlay_png": overlay}
 
