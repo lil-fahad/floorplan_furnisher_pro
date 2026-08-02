@@ -1,0 +1,34 @@
+name: Export final source snapshot
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 193d1f464caf60f552905cb62045a74b0ee5b5dc
+          fetch-depth: 1
+          lfs: true
+          submodules: false
+          path: source
+      - name: Scan credentials
+        run: |
+          set -euo pipefail
+          if grep -RIlE --binary-files=without-match --exclude-dir=.git --exclude='.env' --exclude='.env.local' 'sk-proj-[A-Za-z0-9_-]{20,}|ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{50,}|AKIA[0-9A-Z]{16}|LTAI[A-Za-z0-9]{12,}|-----BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY-----' source; then exit 1; fi
+      - name: Build archive
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/export"; mkdir -p "$out"
+          printf '%s\n' '{"repository":"lil-fahad/floorplan_furnisher_pro","commit":"193d1f464caf60f552905cb62045a74b0ee5b5dc","history_included":false,"sensitive_local_files_excluded":true}' > "$out/manifest.json"
+          tar -C source --exclude='.git' --exclude='.env' --exclude='.env.local' --exclude='.env.*.local' --exclude='.env.production' --exclude='.env.development' --exclude='.env.test' --exclude='*.pem' --exclude='*.key' --exclude='id_rsa*' --exclude='credentials*.json' --exclude='secrets*.json' --exclude='node_modules' --exclude='.venv' --exclude='venv' --exclude='__pycache__' --exclude='.pytest_cache' --exclude='.ruff_cache' -czf "$out/floorplan_furnisher_pro.tar.gz" .
+          sha256sum "$out/floorplan_furnisher_pro.tar.gz" > "$out/floorplan_furnisher_pro.sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: floorplan-furnisher-pro-source
+          path: ${{ runner.temp }}/export/*
+          retention-days: 7
+          if-no-files-found: error
