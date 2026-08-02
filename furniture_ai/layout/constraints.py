@@ -38,6 +38,4 @@ def is_valid_placement(
 
     if any(furniture_poly.buffer(clearance).intersects(gate) for gate in gates):
         return False
-    if any(furniture_poly.intersects(item) for item in existing):
-        return False
-    return True
+    return not any(furniture_poly.intersects(item) for item in existing)
