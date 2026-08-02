@@ -41,7 +41,7 @@ def load_catalog(path: str = "configs/furniture_catalog.json") -> dict[str, Any]
         return _DEFAULT_CATALOG
     payload = json.loads(catalog_path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
-        raise ValueError("Furniture catalog must be a JSON object")
+        raise TypeError("Furniture catalog must be a JSON object")
     return payload
 
 
